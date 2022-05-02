@@ -1,0 +1,67 @@
+Parameters:
+  Subnets:
+    Type: 'List<AWS::EC2::Subnet::Id>'
+    Description: The list of SubnetIds in your Virtual Private Cloud (VPC)
+    ConstraintDescription: >-
+      must be a list of at least two existing subnets associated with at least
+      two different availability zones. They should be residing in the selected
+      Virtual Private Cloud.
+
+Resources:
+  MyInstanceA:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: us-east-1a
+      ImageId: ami-a4c7edb2
+      InstanceType: t2.micro
+      SecurityGroups: 
+        - !Ref ServerSecurityGroup
+
+  MyInstanceB:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: us-east-1b
+      ImageId: ami-a4c7edb2
+      InstanceType: t2.micro
+      SecurityGroups: 
+        - !Ref ServerSecurityGroup
+
+  ServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow all HTTP, HTTPS and SSH
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 20
+          ToPort: 20
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: ServerSecurityGroup
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: TargetGroup1
+      Port: 80
+      Protocol: HTTP
+      TargetType: instance
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Name: LoadBB
+      Scheme: internet-facing
+      # SecurityGroups: 
+      #   - !Ref ServerSecurityGroup
+      Subnets:
+        !Ref Subnets
