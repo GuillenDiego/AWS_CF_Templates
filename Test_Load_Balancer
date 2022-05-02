@@ -65,4 +65,3 @@ Resources:
       #   - !Ref ServerSecurityGroup
       Subnets:
         !Ref Subnets
-        # Comment
